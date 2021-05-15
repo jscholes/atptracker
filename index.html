@@ -5,11 +5,60 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="X-UA-Compatible" content="ie=edge">
 		<title>Current Tournaments - ATP Tracker</title>
+
+		<style>
+			ul {
+				list-style-type: none;
+			}
+		</style>
 	</head>
 	<body>
+		<header>
+			<a href="#mainHeading">Skip to Main Content</a>
+			<nav>
+				<ul>
+					<li>
+						<a href="/">Current Tournaments</a>
+					</li>
+					<li>
+						<details>
+							<summary id="calendarsLabel">Tournament Calendars</summary>
+							<ul aria-labelledby="calendarsLabel">
+								<li>Main Tour</li>
+								<li>Challengers</li>
+							</ul>
+						</details>
+					</li>
+					<li>
+						<details>
+							<summary id="rankingsLabel">Player Rankings</summary>
+							<ul aria-labelledby="rankingsLabel">
+								<li>Singles</li>
+								<li>Doubles</li>
+								<li>Singles Race to London</li>
+								<li>Doubles Race to London</li>
+								<li>Singles Race to Milan</li>
+								<li>ATP Cup</li>
+							</ul>
+						</details>
+					</li>
+					<li>Videos</li>
+					<li>
+						<details>
+							<summary>Player Search</summary>
+							<p>Nothing here yet.</p>
+						</details>
+					</li>
+				</ul>
+			</nav>
+		</header>
 		<main>
-			<h1>Current Tournaments</h1>
+			<h1 id="mainHeading" tabindex="-1">Current Tournaments</h1>
 			<p>No tournaments are currently in progress.</p>
 		</main>
+		<footer>
+			<p>Unless otherwise stated, all data is copyright and property of <a href="https://www.atptour.com/">ATP Tour, Inc.</a> and related bodies. It is used here without explicit permission for purposes of increasing the accessibility of that data to disabled audiences.</p>
+			<a href="https://github.com/jscholes/tennistracker">Tennis Tracker on GitHub</a>
+		</footer>
 	</body>
 </html>
