@@ -10,6 +10,14 @@
 			ul {
 				list-style-type: none;
 			}
+
+			details > summary {
+				list-style: none;
+			}
+
+			details > summary::-webkit-details-marker {
+				display: none;
+			}
 		</style>
 	</head>
 	<body>
@@ -76,9 +84,16 @@
 				<ul aria-labelledby="mainHeading">
 					{{range .}}
 						<li>
-							<a href="/tournament/{{.ID}}">
-								{{.Name}} {{.Type}} ({{.SinglesDrawSize}} singles / {{.DoublesDrawSize}} doubles on {{.Surface}})
-							</a>
+							<details>
+								<summary>
+									<h2 id="eventHeading-{{.ID}}">{{.Name}} {{.Type}} ({{.SinglesDrawSize}} singles / {{.DoublesDrawSize}} doubles on {{.Surface}})</h2>
+								</summary>
+								<ul aria-labelledby="eventHeading-{{.ID}}">
+									<li>
+										<a href="/tournament/{{.ID}}">Overview</a>
+									</li>
+								</ul>
+							</details>
 						</li>
 					{{end}}
 				</ul>
