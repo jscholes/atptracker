@@ -43,7 +43,7 @@ func main() {
 		}
 	})
 
-	log.Printf("Serving task creation interface on port %s; press Ctrl+C to quit", port)
+	log.Printf("Serving application on port %s; press Ctrl+C to quit", port)
 
 	serveAddr := fmt.Sprintf(":%s", port)
 	log.Fatal(http.ListenAndServe(serveAddr, nil))
