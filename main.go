@@ -12,7 +12,7 @@ import (
 //go:embed index.html
 var staticFS embed.FS
 
-type LinkedTournament struct {
+type LiveEvent struct {
 	ID string
 	Year int
 	Name string
@@ -50,10 +50,10 @@ func main() {
 	log.Fatal(http.ListenAndServe(serveAddr, nil))
 }
 
-func GetSampleLiveEvents() []LinkedTournament {
-	var events []LinkedTournament
-	events = append(events, LinkedTournament{"416", 2021, "Rome", "1000", 56, 32, "Clay"})
-	events = append(events, LinkedTournament{"460", 2021, "Heilbronn", "Challenger", 32, 16, "Clay"})
-	events = append(events, LinkedTournament{"7694", 2021, "Lyon", "250", 28, 16, "Clay"})
+func GetSampleLiveEvents() []LiveEvent {
+	var events []LiveEvent
+	events = append(events, LiveEvent{"416", 2021, "Rome", "1000", 56, 32, "Clay"})
+	events = append(events, LiveEvent{"460", 2021, "Heilbronn", "Challenger", 32, 16, "Clay"})
+	events = append(events, LiveEvent{"7694", 2021, "Lyon", "250", 28, 16, "Clay"})
 	return events
 }
