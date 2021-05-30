@@ -14,6 +14,7 @@ var staticFS embed.FS
 
 type LinkedTournament struct {
 	ID string
+	Year int
 	Name string
 	Type string
 	SinglesDrawSize int
@@ -51,8 +52,8 @@ func main() {
 
 func GetSampleLiveEvents() []LinkedTournament {
 	var events []LinkedTournament
-	events = append(events, LinkedTournament{"416", "Rome", "1000", 56, 32, "Clay"})
-	events = append(events, LinkedTournament{"460", "Heilbronn", "Challenger", 32, 16, "Clay"})
-	events = append(events, LinkedTournament{"7694", "Lyon", "250", 28, 16, "Clay"})
+	events = append(events, LinkedTournament{"416", 2021, "Rome", "1000", 56, 32, "Clay"})
+	events = append(events, LinkedTournament{"460", 2021, "Heilbronn", "Challenger", 32, 16, "Clay"})
+	events = append(events, LinkedTournament{"7694", 2021, "Lyon", "250", 28, 16, "Clay"})
 	return events
 }
