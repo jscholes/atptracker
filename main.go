@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/go-chi/chi/v5"
 )
 
 //go:embed index.html
@@ -36,7 +38,9 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r := chi.NewRouter()
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFS(staticFS, "index.html")
 		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
@@ -55,7 +59,7 @@ func main() {
 	log.Printf("Serving application on port %s; press Ctrl+C to quit", port)
 
 	serveAddr := fmt.Sprintf(":%s", port)
-	log.Fatal(http.ListenAndServe(serveAddr, nil))
+	log.Fatal(http.ListenAndServe(serveAddr, r))
 }
 
 func GetLiveEvents() []LiveEvent {
