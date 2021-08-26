@@ -36,7 +36,7 @@ func main() {
 			return
 		}
 
-		events := GetSampleLiveEvents()
+		events := GetLiveEvents()
 		if err := t.Execute(w, events); err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
 			log.Printf("Error executing template index.html: %w", err)
@@ -50,10 +50,16 @@ func main() {
 	log.Fatal(http.ListenAndServe(serveAddr, nil))
 }
 
-func GetSampleLiveEvents() []LiveEvent {
+func GetLiveEvents() []LiveEvent {
 	var events []LiveEvent
-	events = append(events, LiveEvent{"416", 2021, "Rome", "1000", 56, 32, "Clay"})
-	events = append(events, LiveEvent{"460", 2021, "Heilbronn", "Challenger", 32, 16, "Clay"})
-	events = append(events, LiveEvent{"7694", 2021, "Lyon", "250", 28, 16, "Clay"})
+	events = append(events, LiveEvent{
+		ID: "usopen2021",
+		Year: 2021,
+		Name: "US Open",
+		Type: "Grand Slam",
+		SinglesDrawSize: 128,
+		DoublesDrawSize: 64,
+		Surface: "Hard",
+	})
 	return events
 }
