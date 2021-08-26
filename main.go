@@ -20,6 +20,14 @@ type LiveEvent struct {
 	SinglesDrawSize int
 	DoublesDrawSize int
 	Surface string
+	HasOverview bool
+	HasLiveScores bool
+	HasResults bool
+	HasDraw bool
+	HasSchedule bool
+	HasSeedsList bool
+	HasFullPlayersList bool
+	HasPrizePointBreakdown bool
 }
 
 func main() {
@@ -60,6 +68,14 @@ func GetLiveEvents() []LiveEvent {
 		SinglesDrawSize: 128,
 		DoublesDrawSize: 64,
 		Surface: "Hard",
+		HasOverview: false,
+		HasLiveScores: true,
+		HasResults: true,
+		HasDraw: true,
+		HasSchedule: true,
+		HasSeedsList: false,
+		HasFullPlayersList: true,
+		HasPrizePointBreakdown: false,
 	})
 	return events
 }

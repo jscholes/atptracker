@@ -82,13 +82,14 @@
 								</summary>
 								<p>{{.Type}} ({{.SinglesDrawSize}} singles / {{.DoublesDrawSize}} doubles on {{.Surface}})</p>
 								<ul aria-labelledby="eventHeading-{{.ID}}">
-									<li><a href="/tournament/{{.ID}}/{{.Year}}">Overview</a></li>
-									<li><a href="/tournament/{{.ID}}/{{.Year}}/scores">Scores</a></li>
-									<li><a href="/tournament/{{.ID}}/{{.Year}}/results">Results</a></li>
-									<li><a href="/tournament/{{.ID}}/{{.Year}}/draw">Draw</a></li>
-									<li><a href="/tournament/{{.ID}}/{{.Year}}/schedule">Schedule</a></li>
-									<li><a href="/tournament/{{.ID}}/{{.Year}}/seeds">Seeds</a></li>
-									<li><a href="/tournament/{{.ID}}/{{.Year}}/prizes">Prize Money and Point Breakdown</a></li>
+									{{if .HasOverview}}<li><a href="/tournament/{{.ID}}/{{.Year}}">Overview</a></li>{{end}}
+									{{if .HasLiveScores}}<li><a href="/tournament/{{.ID}}/{{.Year}}/scores">Scores</a></li>{{end}}
+									{{if .HasResults}}<li><a href="/tournament/{{.ID}}/{{.Year}}/results">Results</a></li>{{end}}
+									{{if .HasDraw}}<li><a href="/tournament/{{.ID}}/{{.Year}}/draw">Draw</a></li>{{end}}
+									{{if .HasSchedule}}<li><a href="/tournament/{{.ID}}/{{.Year}}/schedule">Schedule</a></li>{{end}}
+									{{if .HasSeedsList}}<li><a href="/tournament/{{.ID}}/{{.Year}}/seeds">Seeds</a></li>{{end}}
+									{{if .HasFullPlayersList}}<li><a href="/tournament/{{.ID}}/{{.Year}}/players">All Players</a></li>{{end}}
+									{{if .HasPrizePointBreakdown}}<li><a href="/tournament/{{.ID}}/{{.Year}}/prizes">Prize Money and Point Breakdown</a></li>{{end}}
 								</ul>
 							</details>
 						</li>
