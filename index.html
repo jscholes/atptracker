@@ -78,8 +78,9 @@
 						<li>
 							<details>
 								<summary>
-									<span role="heading" aria-level="2" id="eventHeading-{{.ID}}">{{.Name}} {{.Type}} ({{.SinglesDrawSize}} singles / {{.DoublesDrawSize}} doubles on {{.Surface}})</span>
+									<span role="heading" aria-level="2" id="eventHeading-{{.ID}}">{{.Name}}</span>
 								</summary>
+								<p>{{.Type}} ({{.SinglesDrawSize}} singles / {{.DoublesDrawSize}} doubles on {{.Surface}})</p>
 								<ul aria-labelledby="eventHeading-{{.ID}}">
 									<li><a href="/tournament/{{.ID}}/{{.Year}}">Overview</a></li>
 									<li><a href="/tournament/{{.ID}}/{{.Year}}/scores">Scores</a></li>
