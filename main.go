@@ -43,6 +43,12 @@ func main() {
 		port = "8080"
 	}
 
+	var tournaments []LiveTournament
+	tournaments, err := GetOneOffTournaments(TournamentsFilename)
+	if err != nil {
+		log.Printf("Error loading live tournaments: %v", err)
+	}
+
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -50,13 +56,6 @@ func main() {
 		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
 			log.Printf("Error loading template index.html: %w", err)
-			return
-		}
-
-		tournaments, err := GetOneOffTournaments(TournamentsFilename)
-		if err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading live tournaments: %v", err)
 			return
 		}
 
