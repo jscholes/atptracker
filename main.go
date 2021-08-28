@@ -152,6 +152,7 @@ func (u USOpenProvider) DeserializePlayers(data []byte) ([]Player, error) {
 	type USOpenPlayer struct {
 		FirstName string `json:"first_name"`
 		LastName string `json:"last_name"`
+		Country string `json:"country_long"`
 	}
 
 	type USOpenPlayerList struct {
@@ -168,6 +169,7 @@ func (u USOpenProvider) DeserializePlayers(data []byte) ([]Player, error) {
 	for _, p := range USOpenPlayers.Players {
 		players = append(players, Player{
 			Name: fmt.Sprintf("%s %s", p.FirstName, p.LastName),
+			Country: p.Country,
 		})
 	}
 
@@ -195,6 +197,7 @@ type LiveTournament struct {
 
 type Player struct {
 	Name string
+	Country string
 }
 
 func main() {
