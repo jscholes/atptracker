@@ -23,6 +23,7 @@ const (
 )
 
 type TournamentDataService struct {
+	http *http.Client
 	providerRegistry *DataProviderRegistry
 	tournaments []LiveTournament
 }
@@ -42,7 +43,6 @@ func (tds *TournamentDataService) GetAllTournaments() []LiveTournament {
 }
 
 type DataProviderRegistry struct {
-	context *ProviderContext
 	providers map[string]DataProvider
 }
 
@@ -51,7 +51,6 @@ func (dpr *DataProviderRegistry) RegisterProvider(dp DataProvider) {
 		dpr.providers = make(map[string]DataProvider)
 	}
 
-	dp.context = dpr.context
 	dpr.providers[dp.ID] = dp
 }
 
@@ -65,13 +64,8 @@ func (dpr *DataProviderRegistry) GetProvider(id string) (DataProvider, error) {
 	return dp, nil
 }
 
-type ProviderContext struct {
-	http *http.Client
-}
-
 type DataProvider struct {
 	ID string
-	context *ProviderContext
 	BaseURL string
 	UserAgent string
 }
@@ -115,21 +109,16 @@ func main() {
 		log.Printf("Error loading live tournaments: %v", err)
 	}
 
-	ctx := &ProviderContext{
-		http: &http.Client{
-			Timeout: HTTPClientTimeout * time.Second,
-		},
-	}
-
-	dpr := &DataProviderRegistry{
-		context: ctx,
-	}
+	dpr := &DataProviderRegistry{}
 
 	for _, p := range oneOffTournamentProviders {
 		dpr.RegisterProvider(p)
 	}
 
 	dataService := TournamentDataService{
+		http: &http.Client{
+			Timeout: HTTPClientTimeout * time.Second,
+		},
 		providerRegistry: dpr,
 	}
 
