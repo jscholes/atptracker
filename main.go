@@ -21,6 +21,21 @@ const (
 	HTTPClientTimeout = 30
 )
 
+type TournamentDataService struct {
+	providerRegistry *DataProviderRegistry
+	tournaments []LiveTournament
+}
+
+func (tds *TournamentDataService) RegisterTournament(t LiveTournament) error {
+	_, err := tds.providerRegistry.GetProvider(t.ProviderID)
+	if err != nil {
+		return err
+	}
+
+	tds.tournaments = append(tds.tournaments, t)
+	return nil
+}
+
 type DataProviderRegistry struct {
 	context *ProviderContext
 	providers map[string]DataProvider
@@ -33,6 +48,16 @@ func (dpr *DataProviderRegistry) RegisterProvider(dp DataProvider) {
 
 	dp.context = dpr.context
 	dpr.providers[dp.ID] = dp
+}
+
+func (dpr *DataProviderRegistry) GetProvider(id string) (DataProvider, error) {
+	var dp DataProvider
+	dp, ok := dpr.providers[id]
+	if !ok {
+		return dp, fmt.Errorf("no provider registered with ID %s", id)
+	}
+
+	return dp, nil
 }
 
 type ProviderContext struct {
@@ -95,6 +120,17 @@ func main() {
 
 	for _, p := range oneOffTournamentProviders {
 		dpr.RegisterProvider(p)
+	}
+
+	dataService := TournamentDataService{
+		providerRegistry: dpr,
+	}
+
+	for _, t := range tournaments {
+		err := dataService.RegisterTournament(t)
+		if err != nil {
+			log.Printf("Error registering tournament with ID %s: %v", t.ID, err)
+		}
 	}
 
 	r := chi.NewRouter()
