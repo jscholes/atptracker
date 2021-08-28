@@ -36,6 +36,10 @@ func (tds *TournamentDataService) RegisterTournament(t LiveTournament) error {
 	return nil
 }
 
+func (tds *TournamentDataService) GetAllTournaments() []LiveTournament {
+	return tds.tournaments
+}
+
 type DataProviderRegistry struct {
 	context *ProviderContext
 	providers map[string]DataProvider
@@ -143,7 +147,7 @@ func main() {
 			return
 		}
 
-		if err := t.Execute(w, tournaments); err != nil {
+		if err := t.Execute(w, dataService.GetAllTournaments()); err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
 			log.Printf("Error executing template index.html: %w", err)
 			return
