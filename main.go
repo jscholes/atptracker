@@ -119,7 +119,7 @@ func (u USOpenProvider) UserAgent() string {
 }
 
 func (u USOpenProvider) PlayersURL(t LiveTournament) (string, error) {
-	return fmt.Sprintf("https://www.usopen.org/en_US/scores/feeds/%s/players/players.json", t.Year), nil
+	return fmt.Sprintf("%s/scores/feeds/%s/players/players.json", u.BaseURL(), t.Year), nil
 }
 
 type LiveTournament struct {
