@@ -2,7 +2,7 @@
 	{
 		"id": "usopen2021",
 		"year": 2021,
-		"name": "US Open",
+		"name": "US Open (test)",
 		"type": "Grand Slam",
 		"singlesDrawSize": 128,
 		"doublesDrawSize": 64,
