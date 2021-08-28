@@ -1,107 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="ie=edge">
-		<title>Current Tournaments - ATP Tracker</title>
+{{template "layout" .}}
 
-		<style>
-			ul {
-				list-style-type: none;
-			}
-		</style>
-	</head>
-	<body>
-		<header>
-			<a href="#mainHeading">Skip to Main Content</a>
-			<nav>
-				<ul>
-					<li>
-						<a href="/">Current Tournaments</a>
-					</li>
-					<li>
-						<details>
-							<summary id="calendarsLabel">Tournament Calendars</summary>
-							<ul aria-labelledby="calendarsLabel">
-								<li>
-									<a href="/calendars/main">Main Tour</a>
-								</li>
-								<li>
-									<a href="/calendars/challenger">Challengers</a>
-								</li>
-							</ul>
-						</details>
-					</li>
-					<li>
-						<details>
-							<summary id="rankingsLabel">Player Rankings</summary>
-							<ul aria-labelledby="rankingsLabel">
-								<li>
-									<a href="/rankings/singles">Singles</a>
-								</li>
-								<li>
-									<a href="/rankings/doubles">Doubles</a>
-								</li>
-								<li>
-									<a href="/rankings/singles/finals">Singles Tour Finals Race</a>
-								</li>
-								<li>
-									<a href="/rankings/doubles/finals">Doubles Tour Finals Race</a>
-								</li>
-								<li>
-									<a href="/rankings/singles/next-gen">Singles Next Gen Finals Race</a>
-								</li>
-								<li>
-									<a href="/rankings/atp-cup">ATP Cup</a>
-								</li>
-							</ul>
-						</details>
-					</li>
-					<li>
-						<a href="/videos">Videos</a>
-					</li>
-					<li>
-						<details>
-							<summary>Player Search</summary>
-							<p>Nothing here yet.</p>
-						</details>
-					</li>
-				</ul>
-			</nav>
-		</header>
-		<main>
-			<h1 id="mainHeading" tabindex="-1">Current Tournaments</h1>
-			{{if .}}
-				<ul aria-labelledby="mainHeading">
-					{{range .}}
-						<li>
-							<details>
-								<summary>
-									<span role="heading" aria-level="2" id="eventHeading-{{.ID}}">{{.Name}}</span>
-								</summary>
-								<p>{{.Type}} ({{.SinglesDrawSize}} singles / {{.DoublesDrawSize}} doubles on {{.Surface}})</p>
-								<ul aria-labelledby="eventHeading-{{.ID}}">
-									{{if .HasOverview}}<li><a href="/tournament/{{.ID}}/{{.Year}}">Overview</a></li>{{end}}
-									{{if .HasLiveScores}}<li><a href="/tournament/{{.ID}}/{{.Year}}/scores">Scores</a></li>{{end}}
-									{{if .HasResults}}<li><a href="/tournament/{{.ID}}/{{.Year}}/results">Results</a></li>{{end}}
-									{{if .HasDraw}}<li><a href="/tournament/{{.ID}}/{{.Year}}/draw">Draw</a></li>{{end}}
-									{{if .HasSchedule}}<li><a href="/tournament/{{.ID}}/{{.Year}}/schedule">Schedule</a></li>{{end}}
-									{{if .HasSeedsList}}<li><a href="/tournament/{{.ID}}/{{.Year}}/seeds">Seeds</a></li>{{end}}
-									{{if .HasFullPlayersList}}<li><a href="/tournament/{{.ID}}/{{.Year}}/players">All Players</a></li>{{end}}
-									{{if .HasPrizePointBreakdown}}<li><a href="/tournament/{{.ID}}/{{.Year}}/prizes">Prize Money and Point Breakdown</a></li>{{end}}
-								</ul>
-							</details>
-						</li>
-					{{end}}
-				</ul>
-			{{else}}
-				<p>No tournaments are currently in progress.</p>
+{{define "pageTitle"}}Current Tournaments{{end}}
+{{define "mainHeading"}}Current Tournaments{{end}}
+
+{{define "main"}}
+	{{if .}}
+		<ul aria-labelledby="mainHeading">
+			{{range .}}
+				<li>
+					<details>
+						<summary>
+							<span role="heading" aria-level="2" id="eventHeading-{{.ID}}">{{.Name}}</span>
+						</summary>
+						<p>{{.Type}} ({{.SinglesDrawSize}} singles / {{.DoublesDrawSize}} doubles on {{.Surface}})</p>
+						<ul aria-labelledby="eventHeading-{{.ID}}">
+							{{if .HasOverview}}<li><a href="/tournament/{{.ID}}/{{.Year}}">Overview</a></li>{{end}}
+							{{if .HasLiveScores}}<li><a href="/tournament/{{.ID}}/{{.Year}}/scores">Scores</a></li>{{end}}
+							{{if .HasResults}}<li><a href="/tournament/{{.ID}}/{{.Year}}/results">Results</a></li>{{end}}
+							{{if .HasDraw}}<li><a href="/tournament/{{.ID}}/{{.Year}}/draw">Draw</a></li>{{end}}
+							{{if .HasSchedule}}<li><a href="/tournament/{{.ID}}/{{.Year}}/schedule">Schedule</a></li>{{end}}
+							{{if .HasSeedsList}}<li><a href="/tournament/{{.ID}}/{{.Year}}/seeds">Seeds</a></li>{{end}}
+							{{if .HasFullPlayersList}}<li><a href="/tournament/{{.ID}}/{{.Year}}/players">All Players</a></li>{{end}}
+							{{if .HasPrizePointBreakdown}}<li><a href="/tournament/{{.ID}}/{{.Year}}/prizes">Prize Money and Point Breakdown</a></li>{{end}}
+						</ul>
+					</details>
+				</li>
 			{{end}}
-		</main>
-		<footer>
-			<p>Unless otherwise stated, all data is copyright and property of <a href="https://www.atptour.com/">ATP Tour, Inc.</a> and related bodies. It is used here without explicit permission for purposes of increasing the accessibility of that data to disabled audiences.</p>
-			<a href="https://github.com/jscholes/atptracker">ATP Tracker on GitHub</a>
-		</footer>
-	</body>
-</html>
+		</ul>
+	{{else}}
+		<p>No tournaments are currently in progress.</p>
+	{{end}}
+{{end}}

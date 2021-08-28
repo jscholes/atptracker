@@ -13,7 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-//go:embed index.html players.html
+//go:embed *.html
 var staticFS embed.FS
 
 const (
@@ -184,14 +184,21 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		t, err := template.ParseFS(staticFS, "index.html")
+		t, err := template.New("index.html").ParseFS(staticFS, "index.html")
 		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading template index.html: %v", err)
+			log.Printf("Error loading template: %v", err)
 			return
 		}
 
-		if err := t.Execute(w, dataService.GetAllTournaments()); err != nil {
+		t, err = t.ParseFS(staticFS, "layout.html")
+		if err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+			log.Printf("Error loading template: %v", err)
+			return
+		}
+
+		if err := t.ExecuteTemplate(w, "index.html", dataService.GetAllTournaments()); err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
 			log.Printf("Error executing template index.html: %v", err)
 			return
@@ -199,13 +206,6 @@ func main() {
 	})
 
 	r.Get("/tournament/{id}/{year}/players", func(w http.ResponseWriter, r *http.Request) {
-		t, err := template.ParseFS(staticFS, "players.html")
-		if err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading template player.html: %w", err)
-			return
-		}
-
 		tournamentID := chi.URLParam(r, "id")
 		players, err := dataService.GetPlayers(tournamentID)
 		if err != nil {
@@ -214,9 +214,23 @@ func main() {
 			return
 		}
 
-		if err := t.Execute(w, players); err != nil {
+		t, err := template.New("players.html").ParseFS(staticFS, "players.html")
+		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error executing template players.html: %w", err)
+			log.Printf("Error loading template: %v", err)
+			return
+		}
+
+		t, err = t.ParseFS(staticFS, "layout.html")
+		if err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+			log.Printf("Error loading template: %v", err)
+			return
+		}
+
+		if err := t.ExecuteTemplate(w, "players.html", players); err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+			log.Printf("Error executing template players.html: %v", err)
 			return
 		}
 	})
