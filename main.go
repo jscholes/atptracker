@@ -58,8 +58,8 @@ func (tds *TournamentDataService) GetTournament(id string) (LiveTournament, erro
 	return tournament, nil
 }
 
-func (tds *TournamentDataService) GetPlayers(t LiveTournament) ([]Player, error) {
-	var players []Player
+func (tds *TournamentDataService) GetPlayers(t LiveTournament) (PlayerMap, error) {
+	var players PlayerMap
 
 	provider, err := tds.providerRegistry.GetProvider(t.ProviderID)
 	if err != nil {
@@ -127,7 +127,7 @@ type DataProvider interface {
 	BaseURL() string
 	UserAgent() string
 	PlayersURL(t LiveTournament) (string, error)
-	DeserializePlayers(data []byte) ([]Player, error)
+	DeserializePlayers(data []byte) (PlayerMap, error)
 }
 
 type USOpenProvider struct {}
@@ -148,18 +148,25 @@ func (u USOpenProvider) PlayersURL(t LiveTournament) (string, error) {
 	return fmt.Sprintf("%s/scores/feeds/%d/players/players.json", u.BaseURL(), t.Year), nil
 }
 
-func (u USOpenProvider) DeserializePlayers(data []byte) ([]Player, error) {
+func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
+	type USOpenEvent struct {
+		ID string `json:"event_id"`
+		Name string `json:"event_name"`
+		Seed int
+	}
+
 	type USOpenPlayer struct {
 		FirstName string `json:"first_name"`
 		LastName string `json:"last_name"`
 		Country string `json:"country_long"`
+		Events []USOpenEvent `json:"events_entered"`
 	}
 
 	type USOpenPlayerList struct {
 		Players []USOpenPlayer
 	}
 
-	var players []Player
+	players := make(PlayerMap)
 	var USOpenPlayers USOpenPlayerList
 
 	if err := json.Unmarshal(data, &USOpenPlayers); err != nil {
@@ -167,10 +174,22 @@ func (u USOpenProvider) DeserializePlayers(data []byte) ([]Player, error) {
 	}
 
 	for _, p := range USOpenPlayers.Players {
-		players = append(players, Player{
-			Name: fmt.Sprintf("%s %s", p.FirstName, p.LastName),
-			Country: p.Country,
-		})
+		for _, e := range p.Events {
+			evt, ok := players[e.ID]
+			if !ok {
+				evt = Event{
+					ID: e.ID,
+					Name: e.Name,
+				}
+			}
+			evt.Players = append(evt.Players, Player{
+				Name: fmt.Sprintf("%s %s", p.FirstName, p.LastName),
+				Country: p.Country,
+				Seeded: e.Seed > 0,
+				Seed: e.Seed,
+			})
+			players[e.ID] = evt
+		}
 	}
 
 	return players, nil
@@ -195,9 +214,19 @@ type LiveTournament struct {
 	HasPrizePointBreakdown bool
 }
 
+type PlayerMap map[string]Event
+
+type Event struct {
+	ID string
+	Name string
+	Players []Player
+}
+
 type Player struct {
 	Name string
 	Country string
+	Seeded bool
+	Seed int
 }
 
 func main() {
