@@ -22,7 +22,7 @@ const (
 )
 
 type DataProviderRegistry struct {
-	Context *ProviderContext
+	context *ProviderContext
 	providers map[string]DataProvider
 }
 
@@ -31,6 +31,7 @@ func (dpr *DataProviderRegistry) RegisterProvider(dp DataProvider) {
 		dpr.providers = make(map[string]DataProvider)
 	}
 
+	dp.context = dpr.context
 	dpr.providers[dp.ID] = dp
 }
 
@@ -40,6 +41,7 @@ type ProviderContext struct {
 
 type DataProvider struct {
 	ID string
+	context *ProviderContext
 }
 
 type LiveTournament struct {
@@ -86,7 +88,7 @@ func main() {
 	}
 
 	dpr := &DataProviderRegistry{
-		Context: ctx,
+		context: ctx,
 	}
 
 	for _, p := range oneOffTournamentProviders {
