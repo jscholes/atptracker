@@ -19,6 +19,7 @@ var staticFS embed.FS
 const (
 	TournamentsFilename = "one-off-tournaments.json"
 	HTTPClientTimeout = 30
+	DesktopUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
 )
 
 type TournamentDataService struct {
@@ -71,7 +72,8 @@ type ProviderContext struct {
 type DataProvider struct {
 	ID string
 	context *ProviderContext
-		baseURL string
+	BaseURL string
+	UserAgent string
 }
 
 type LiveTournament struct {
@@ -102,7 +104,8 @@ func main() {
 	oneOffTournamentProviders := []DataProvider{
 		DataProvider{
 			ID: "gs-uso-2021",
-			baseURL: "https://www.usopen.org/en_US",
+			BaseURL: "https://www.usopen.org/en_US",
+			UserAgent: DesktopUserAgent,
 		},
 	}
 
