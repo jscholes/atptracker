@@ -13,7 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-//go:embed index.html
+//go:embed index.html players.html
 var staticFS embed.FS
 
 const (
@@ -36,6 +36,39 @@ func (tds *TournamentDataService) RegisterTournament(t LiveTournament) error {
 
 	tds.tournaments = append(tds.tournaments, t)
 	return nil
+}
+
+func (tds *TournamentDataService) GetTournament(id string) (LiveTournament, error) {
+	var tournament LiveTournament
+	ok := false
+
+	for _, t := range tds.GetAllTournaments() {
+		if t.ID == id {
+			tournament = t
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		return tournament, fmt.Errorf("no tournament registered with ID %s", id)
+	}
+
+	return tournament, nil
+}
+
+func (tds *TournamentDataService) GetPlayers(tournamentID string) ([]Player, error) {
+	var players []Player
+	_, err := tds.GetTournament(tournamentID)
+	if err != nil {
+		return players, fmt.Errorf("fetching players for tournament with ID %s: %w", tournamentID, err)
+	}
+
+	players = append(players, Player{
+		Name: "Kristie Ahn",
+	})
+
+	return players, nil
 }
 
 func (tds *TournamentDataService) GetAllTournaments() []LiveTournament {
@@ -108,6 +141,10 @@ type LiveTournament struct {
 	HasPrizePointBreakdown bool
 }
 
+type Player struct {
+	Name string
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -150,13 +187,36 @@ func main() {
 		t, err := template.ParseFS(staticFS, "index.html")
 		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading template index.html: %w", err)
+			log.Printf("Error loading template index.html: %v", err)
 			return
 		}
 
 		if err := t.Execute(w, dataService.GetAllTournaments()); err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error executing template index.html: %w", err)
+			log.Printf("Error executing template index.html: %v", err)
+			return
+		}
+	})
+
+	r.Get("/tournament/{id}/{year}/players", func(w http.ResponseWriter, r *http.Request) {
+		t, err := template.ParseFS(staticFS, "players.html")
+		if err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+			log.Printf("Error loading template player.html: %w", err)
+			return
+		}
+
+		tournamentID := chi.URLParam(r, "id")
+		players, err := dataService.GetPlayers(tournamentID)
+		if err != nil {
+			http.Error(w, "404 tournament not found", http.StatusNotFound)
+			log.Printf("Error fetching player list for tournament with ID %s: %w", tournamentID, err)
+			return
+		}
+
+		if err := t.Execute(w, players); err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+			log.Printf("Error executing template players.html: %w", err)
 			return
 		}
 	})
