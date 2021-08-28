@@ -42,6 +42,7 @@ type ProviderContext struct {
 type DataProvider struct {
 	ID string
 	context *ProviderContext
+		baseURL string
 }
 
 type LiveTournament struct {
@@ -72,6 +73,7 @@ func main() {
 	oneOffTournamentProviders := []DataProvider{
 		DataProvider{
 			ID: "gs-uso-2021",
+			baseURL: "https://www.usopen.org/en_US",
 		},
 	}
 
