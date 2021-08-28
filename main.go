@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -57,18 +58,42 @@ func (tds *TournamentDataService) GetTournament(id string) (LiveTournament, erro
 	return tournament, nil
 }
 
-func (tds *TournamentDataService) GetPlayers(tournamentID string) ([]Player, error) {
+func (tds *TournamentDataService) GetPlayers(t LiveTournament) ([]Player, error) {
 	var players []Player
-	_, err := tds.GetTournament(tournamentID)
+
+	provider, err := tds.providerRegistry.GetProvider(t.ProviderID)
 	if err != nil {
-		return players, fmt.Errorf("fetching players for tournament with ID %s: %w", tournamentID, err)
+		return players, err
 	}
 
-	players = append(players, Player{
-		Name: "Kristie Ahn",
-	})
+	url, err := provider.PlayersURL(t)
+	if err != nil {
+		return players, err
+	}
 
-	return players, nil
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return players, err
+	}
+
+	req.Header.Set("User-Agent", provider.UserAgent())
+
+	resp, err := tds.http.Do(req)
+	if err != nil {
+		return players, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return players, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return players, fmt.Errorf("HTTP/%s\n%s", resp.Status, body)
+	}
+
+	return provider.DeserializePlayers(body)
 }
 
 func (tds *TournamentDataService) GetAllTournaments() []LiveTournament {
@@ -102,6 +127,7 @@ type DataProvider interface {
 	BaseURL() string
 	UserAgent() string
 	PlayersURL(t LiveTournament) (string, error)
+	DeserializePlayers(data []byte) ([]Player, error)
 }
 
 type USOpenProvider struct {}
@@ -119,7 +145,33 @@ func (u USOpenProvider) UserAgent() string {
 }
 
 func (u USOpenProvider) PlayersURL(t LiveTournament) (string, error) {
-	return fmt.Sprintf("%s/scores/feeds/%s/players/players.json", u.BaseURL(), t.Year), nil
+	return fmt.Sprintf("%s/scores/feeds/%d/players/players.json", u.BaseURL(), t.Year), nil
+}
+
+func (u USOpenProvider) DeserializePlayers(data []byte) ([]Player, error) {
+	type USOpenPlayer struct {
+		FirstName string `json:"first_name"`
+		LastName string `json:"last_name"`
+	}
+
+	type USOpenPlayerList struct {
+		Players []USOpenPlayer
+	}
+
+	var players []Player
+	var USOpenPlayers USOpenPlayerList
+
+	if err := json.Unmarshal(data, &USOpenPlayers); err != nil {
+		return players, fmt.Errorf("unmarshaling JSON response: %w", err)
+	}
+
+	for _, p := range USOpenPlayers.Players {
+		players = append(players, Player{
+			Name: fmt.Sprintf("%s %s", p.FirstName, p.LastName),
+		})
+	}
+
+	return players, nil
 }
 
 type LiveTournament struct {
@@ -207,10 +259,17 @@ func main() {
 
 	r.Get("/tournament/{id}/{year}/players", func(w http.ResponseWriter, r *http.Request) {
 		tournamentID := chi.URLParam(r, "id")
-		players, err := dataService.GetPlayers(tournamentID)
+		tournament, err := dataService.GetTournament(tournamentID)
 		if err != nil {
 			http.Error(w, "404 tournament not found", http.StatusNotFound)
-			log.Printf("Error fetching player list for tournament with ID %s: %w", tournamentID, err)
+			log.Printf("Error fetching player list for tournament with ID %s: %v", tournamentID, err)
+			return
+		}
+
+		players, err := dataService.GetPlayers(tournament)
+		if err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+			log.Printf("Error fetching player list for tournament with ID %s: %v", tournamentID, err)
 			return
 		}
 
