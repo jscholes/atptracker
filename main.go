@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -17,7 +18,29 @@ var staticFS embed.FS
 
 const (
 	TournamentsFilename = "one-off-tournaments.json"
+	HTTPClientTimeout = 30
 )
+
+type DataProviderRegistry struct {
+	Context *ProviderContext
+	providers map[string]DataProvider
+}
+
+func (dpr *DataProviderRegistry) RegisterProvider(dp DataProvider) {
+	if dpr.providers == nil {
+		dpr.providers = make(map[string]DataProvider)
+	}
+
+	dpr.providers[dp.ID] = dp
+}
+
+type ProviderContext struct {
+	http *http.Client
+}
+
+type DataProvider struct {
+	ID string
+}
 
 type LiveTournament struct {
 	ID string
@@ -26,6 +49,7 @@ type LiveTournament struct {
 	Type string
 	SinglesDrawSize int
 	DoublesDrawSize int
+	ProviderID string
 	Surface string
 	HasOverview bool
 	HasLiveScores bool
@@ -43,10 +67,30 @@ func main() {
 		port = "8080"
 	}
 
+	oneOffTournamentProviders := []DataProvider{
+		DataProvider{
+			ID: "gs-uso-2021",
+		},
+	}
+
 	var tournaments []LiveTournament
 	tournaments, err := GetOneOffTournaments(TournamentsFilename)
 	if err != nil {
 		log.Printf("Error loading live tournaments: %v", err)
+	}
+
+	ctx := &ProviderContext{
+		http: &http.Client{
+			Timeout: HTTPClientTimeout * time.Second,
+		},
+	}
+
+	dpr := &DataProviderRegistry{
+		Context: ctx,
+	}
+
+	for _, p := range oneOffTournamentProviders {
+		dpr.RegisterProvider(p)
 	}
 
 	r := chi.NewRouter()
