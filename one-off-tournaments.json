@@ -1,0 +1,19 @@
+[
+	{
+		"id": "usopen2021",
+		"year": 2021,
+		"name": "US Open",
+		"type": "Grand Slam",
+		"singlesDrawSize": 128,
+		"doublesDrawSize": 64,
+		"surface": "Hard",
+		"hasOverview": false,
+		"hasLiveScores": true,
+		"hasResults": true,
+		"hasDraw": true,
+		"hasSchedule": true,
+		"hasSeedsList": false,
+		"hasFullPlayersList": true,
+		"hasPrizePointBreakdown": false
+	}
+]

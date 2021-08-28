@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -13,6 +14,10 @@ import (
 
 //go:embed index.html
 var staticFS embed.FS
+
+const (
+	TournamentsFilename = "one-off-tournaments.json"
+)
 
 type LiveEvent struct {
 	ID string
@@ -48,7 +53,13 @@ func main() {
 			return
 		}
 
-		events := GetLiveEvents()
+		events, err := GetOneOffEvents(TournamentsFilename)
+		if err != nil {
+			http.Error(w, "500 internal server error", http.StatusInternalServerError)
+			log.Printf("Error loading live events: %v", err)
+			return
+		}
+
 		if err := t.Execute(w, events); err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
 			log.Printf("Error executing template index.html: %w", err)
@@ -62,24 +73,17 @@ func main() {
 	log.Fatal(http.ListenAndServe(serveAddr, r))
 }
 
-func GetLiveEvents() []LiveEvent {
+func GetOneOffEvents(path string) ([]LiveEvent, error) {
 	var events []LiveEvent
-	events = append(events, LiveEvent{
-		ID: "usopen2021",
-		Year: 2021,
-		Name: "US Open",
-		Type: "Grand Slam",
-		SinglesDrawSize: 128,
-		DoublesDrawSize: 64,
-		Surface: "Hard",
-		HasOverview: false,
-		HasLiveScores: true,
-		HasResults: true,
-		HasDraw: true,
-		HasSchedule: true,
-		HasSeedsList: false,
-		HasFullPlayersList: true,
-		HasPrizePointBreakdown: false,
-	})
-	return events
+
+	fileContents, err := os.ReadFile(path)
+	if err != nil {
+		return events, fmt.Errorf("loading one-off tournaments from %s: %w", path, err)
+	}
+
+	if err := json.Unmarshal(fileContents, &events); err != nil {
+		return events, fmt.Errorf("unmarshaling JSON from %s: %w", path, err)
+	}
+
+	return events, nil
 }
