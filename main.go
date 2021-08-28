@@ -19,7 +19,7 @@ const (
 	TournamentsFilename = "one-off-tournaments.json"
 )
 
-type LiveEvent struct {
+type LiveTournament struct {
 	ID string
 	Year int
 	Name string
@@ -53,14 +53,14 @@ func main() {
 			return
 		}
 
-		events, err := GetOneOffEvents(TournamentsFilename)
+		tournaments, err := GetOneOffTournaments(TournamentsFilename)
 		if err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading live events: %v", err)
+			log.Printf("Error loading live tournaments: %v", err)
 			return
 		}
 
-		if err := t.Execute(w, events); err != nil {
+		if err := t.Execute(w, tournaments); err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
 			log.Printf("Error executing template index.html: %w", err)
 			return
@@ -73,17 +73,17 @@ func main() {
 	log.Fatal(http.ListenAndServe(serveAddr, r))
 }
 
-func GetOneOffEvents(path string) ([]LiveEvent, error) {
-	var events []LiveEvent
+func GetOneOffTournaments(path string) ([]LiveTournament, error) {
+	var tournaments []LiveTournament
 
 	fileContents, err := os.ReadFile(path)
 	if err != nil {
-		return events, fmt.Errorf("loading one-off tournaments from %s: %w", path, err)
+		return tournaments, fmt.Errorf("loading one-off tournaments from %s: %w", path, err)
 	}
 
-	if err := json.Unmarshal(fileContents, &events); err != nil {
-		return events, fmt.Errorf("unmarshaling JSON from %s: %w", path, err)
+	if err := json.Unmarshal(fileContents, &tournaments); err != nil {
+		return tournaments, fmt.Errorf("unmarshaling JSON from %s: %w", path, err)
 	}
 
-	return events, nil
+	return tournaments, nil
 }
