@@ -68,12 +68,13 @@ type DataProvider interface {
 	ID() string
 	BaseURL() string
 	UserAgent() string
+	PlayersURL(t LiveTournament) (string, error)
 }
 
 type USOpenProvider struct {}
 
 func (u USOpenProvider) ID() string {
-	return "gs-uso-2021"
+	return "gs-uso"
 }
 
 func (u USOpenProvider) BaseURL() string {
@@ -82,6 +83,10 @@ func (u USOpenProvider) BaseURL() string {
 
 func (u USOpenProvider) UserAgent() string {
 	return DesktopUserAgent
+}
+
+func (u USOpenProvider) PlayersURL(t LiveTournament) (string, error) {
+	return fmt.Sprintf("https://www.usopen.org/en_US/scores/feeds/%s/players/players.json", t.Year), nil
 }
 
 type LiveTournament struct {
