@@ -51,7 +51,7 @@ func (dpr *DataProviderRegistry) RegisterProvider(dp DataProvider) {
 		dpr.providers = make(map[string]DataProvider)
 	}
 
-	dpr.providers[dp.ID] = dp
+	dpr.providers[dp.ID()] = dp
 }
 
 func (dpr *DataProviderRegistry) GetProvider(id string) (DataProvider, error) {
@@ -64,10 +64,24 @@ func (dpr *DataProviderRegistry) GetProvider(id string) (DataProvider, error) {
 	return dp, nil
 }
 
-type DataProvider struct {
-	ID string
-	BaseURL string
-	UserAgent string
+type DataProvider interface {
+	ID() string
+	BaseURL() string
+	UserAgent() string
+}
+
+type USOpenProvider struct {}
+
+func (u USOpenProvider) ID() string {
+	return "gs-uso-2021"
+}
+
+func (u USOpenProvider) BaseURL() string {
+	return "https://www.usopen.org/en_US"
+}
+
+func (u USOpenProvider) UserAgent() string {
+	return DesktopUserAgent
 }
 
 type LiveTournament struct {
@@ -96,11 +110,7 @@ func main() {
 	}
 
 	oneOffTournamentProviders := []DataProvider{
-		DataProvider{
-			ID: "gs-uso-2021",
-			BaseURL: "https://www.usopen.org/en_US",
-			UserAgent: DesktopUserAgent,
-		},
+		USOpenProvider{},
 	}
 
 	var tournaments []LiveTournament
