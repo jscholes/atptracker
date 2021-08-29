@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -58,42 +59,63 @@ func (tds *TournamentDataService) GetTournament(id string) (LiveTournament, erro
 	return tournament, nil
 }
 
-func (tds *TournamentDataService) GetPlayers(t LiveTournament) (PlayerMap, error) {
-	var players PlayerMap
+func (tds *TournamentDataService) GetPlayers(t LiveTournament) ([]Event, error) {
+	var events []Event
 
 	provider, err := tds.providerRegistry.GetProvider(t.ProviderID)
 	if err != nil {
-		return players, err
+		return events, err
 	}
 
 	url, err := provider.PlayersURL(t)
 	if err != nil {
-		return players, err
+		return events, err
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return players, err
+		return events, err
 	}
 
 	req.Header.Set("User-Agent", provider.UserAgent())
 
 	resp, err := tds.http.Do(req)
 	if err != nil {
-		return players, err
+		return events, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return players, err
+		return events, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return players, fmt.Errorf("HTTP/%s\n%s", resp.Status, body)
+		return events, fmt.Errorf("HTTP/%s\n%s", resp.Status, body)
 	}
 
-	return provider.DeserializePlayers(body)
+	eventMap, err := provider.DeserializePlayers(body)
+	if err != nil {
+		return events, err
+	}
+
+	// Sort events in alphabetical order
+	eventKeys := make([]string, len(eventMap))
+	i := 0
+
+	for k := range eventMap {
+		eventKeys[i] = k
+		i++
+	}
+
+	sort.Strings(eventKeys)
+
+	for _, k := range 
+	eventKeys {
+		events = append(events, eventMap[k])
+	}
+
+	return events, nil
 }
 
 func (tds *TournamentDataService) GetAllTournaments() []LiveTournament {
