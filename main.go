@@ -208,9 +208,11 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 			}
 
 			seeded := e.Seed > 0
+			ranked := true
 			ranking, err := strconv.Atoi(p.Ranking)
 			if err != nil || p.Ranking == "0" {
-				ranking = len(USOpenPlayers.Players)
+				ranking = 0
+				ranked = false
 			}
 
 			player := Player{
@@ -219,6 +221,7 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 				Seeded: seeded,
 				Seed: e.Seed,
 				Ranking: ranking,
+				Ranked: ranked,
 			}
 			if seeded {
 				evt.SeededPlayers = append(evt.SeededPlayers, player)
@@ -275,6 +278,7 @@ type Player struct {
 	Seeded bool
 	Seed int
 	Ranking int
+	Ranked bool
 }
 
 func main() {

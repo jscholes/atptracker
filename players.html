@@ -27,7 +27,7 @@
 						{{if .UnseededPlayers}}
 							<ul aria-labelledby="eventHeading-{{.ID}} eventHeading-{{.ID}}-unseeded">
 								{{range .UnseededPlayers}}
-									<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
+									<li>{{.Name}} ({{.Country}}) [{{if .Ranked}}{{.Ranking}}{{else}}Unranked{{end}}]</li>
 								{{end}}
 							</ul>
 						{{else}}
