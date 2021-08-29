@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -182,6 +183,7 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 		LastName string `json:"last_name"`
 		Country string `json:"country_long"`
 		Events []USOpenEvent `json:"events_entered"`
+		Ranking string `json:"singles_rank"`
 	}
 
 	type USOpenPlayerList struct {
@@ -204,14 +206,36 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 					Name: e.Name,
 				}
 			}
-			evt.Players = append(evt.Players, Player{
+
+			seeded := e.Seed > 0
+			ranking, err := strconv.Atoi(p.Ranking)
+			if err != nil || p.Ranking == "0" {
+				ranking = len(USOpenPlayers.Players)
+			}
+
+			player := Player{
 				Name: fmt.Sprintf("%s %s", p.FirstName, p.LastName),
 				Country: p.Country,
-				Seeded: e.Seed > 0,
+				Seeded: seeded,
 				Seed: e.Seed,
-			})
+				Ranking: ranking,
+			}
+			if seeded {
+				evt.SeededPlayers = append(evt.SeededPlayers, player)
+			} else {
+				evt.UnseededPlayers = append(evt.UnseededPlayers, player)
+			}
 			players[e.ID] = evt
 		}
+	}
+
+	for _, e := range players {
+		sort.SliceStable(e.SeededPlayers, func(i, j int) bool {
+			return e.SeededPlayers[i].Seed < e.SeededPlayers[j].Seed
+		})
+		sort.SliceStable(e.UnseededPlayers, func(i, j int) bool {
+			return e.UnseededPlayers[i].Ranking < e.UnseededPlayers[j].Ranking
+		})
 	}
 
 	return players, nil
@@ -241,7 +265,8 @@ type PlayerMap map[string]Event
 type Event struct {
 	ID string
 	Name string
-	Players []Player
+	SeededPlayers []Player
+	UnseededPlayers []Player
 }
 
 type Player struct {
@@ -249,6 +274,7 @@ type Player struct {
 	Country string
 	Seeded bool
 	Seed int
+	Ranking int
 }
 
 func main() {

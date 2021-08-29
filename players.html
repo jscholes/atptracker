@@ -13,7 +13,10 @@
 							<span role="heading" aria-level="2" id="eventHeading-{{.ID}}">{{.Name}}</span>
 						</summary>
 						<ul aria-labelledby="eventHeading-{{.ID}}">
-							{{range .Players}}
+							{{range .SeededPlayers}}
+								<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
+							{{end}}
+							{{range .UnseededPlayers}}
 								<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
 							{{end}}
 						</ul>
