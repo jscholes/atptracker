@@ -226,7 +226,9 @@ type DataProvider interface {
 	DeserializePlayers(data []byte) (PlayerMap, error)
 }
 
-type USOpenProvider struct {}
+type USOpenProvider struct {
+	DoublesEvents EventSet
+}
 
 func (u USOpenProvider) ID() string {
 	return "gs-uso"
@@ -257,7 +259,8 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 		LastName string `json:"last_name"`
 		Country string `json:"country_long"`
 		Events []USOpenEvent `json:"events_entered"`
-		Ranking string `json:"singles_rank"`
+		SinglesRanking string `json:"singles_rank"`
+		DoublesRanking string `json:"doubles_rank"`
 	}
 
 	type USOpenPlayerList struct {
@@ -278,15 +281,22 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 				evt = Event{
 					ID: e.ID,
 					Name: e.Name,
+					IsDoubles: u.DoublesEvents.Contains(e.ID),
 				}
 			}
 
 			seeded := e.Seed > 0
-			ranked := true
-			ranking, err := strconv.Atoi(p.Ranking)
-			if err != nil || p.Ranking == "0" {
-				ranking = 0
-				ranked = false
+			hasSinglesRanking := true
+			singlesRanking, err := strconv.Atoi(p.SinglesRanking)
+			if err != nil || p.SinglesRanking == "0" {
+				singlesRanking = 0
+				hasSinglesRanking = false
+			}
+			hasDoublesRanking := true
+			doublesRanking, err := strconv.Atoi(p.DoublesRanking)
+			if err != nil || p.DoublesRanking == "0" {
+				doublesRanking = 0
+				hasDoublesRanking = false
 			}
 
 			player := Player{
@@ -295,8 +305,10 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 				Country: p.Country,
 				Seeded: seeded,
 				Seed: e.Seed,
-				Ranking: ranking,
-				Ranked: ranked,
+				HasSinglesRanking: hasSinglesRanking,
+				SinglesRanking: singlesRanking,
+				HasDoublesRanking: hasDoublesRanking,
+				DoublesRanking: doublesRanking,
 			}
 			if seeded {
 				evt.SeededPlayers = append(evt.SeededPlayers, player)
@@ -312,7 +324,11 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 			return e.SeededPlayers[i].Seed < e.SeededPlayers[j].Seed
 		})
 		sort.SliceStable(e.UnseededPlayers, func(i, j int) bool {
-			return e.UnseededPlayers[i].Ranking < e.UnseededPlayers[j].Ranking
+			if e.IsDoubles {
+				return e.UnseededPlayers[i].DoublesRanking < e.UnseededPlayers[j].DoublesRanking
+			} else {
+				return e.UnseededPlayers[i].SinglesRanking < e.UnseededPlayers[j].SinglesRanking
+			}
 		})
 	}
 
@@ -345,6 +361,7 @@ type Event struct {
 	Name string
 	SeededPlayers []Player
 	UnseededPlayers []Player
+	IsDoubles bool
 }
 
 type Player struct {
@@ -353,8 +370,26 @@ type Player struct {
 	Country string
 	Seeded bool
 	Seed int
-	Ranking int
-	Ranked bool
+	HasSinglesRanking bool
+	SinglesRanking int
+	HasDoublesRanking bool
+	DoublesRanking int
+}
+
+type EventSet map[string]struct{}
+
+func NewEventSet(keys []string) EventSet {
+	var empty struct{}
+	es := make(EventSet)
+	for _, k := range keys {
+		es[k] = empty
+	}
+	return es
+}
+
+func (es EventSet) Contains(key string) bool {
+	_, ok := es[key]
+	return ok
 }
 
 func main() {
@@ -364,7 +399,9 @@ func main() {
 	}
 
 	oneOffTournamentProviders := []DataProvider{
-		USOpenProvider{},
+		USOpenProvider{
+			DoublesEvents: NewEventSet([]string{"MD", "WD", "XD", "BD", "GD", "CD", "DD", "UD", "ED"}),
+		},
 	}
 
 	var tournaments []LiveTournament

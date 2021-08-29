@@ -23,13 +23,15 @@
 									<tr>
 										<th scope="col" role="columnheader">Player</th>
 										<th scope="col" role="columnheader">Singles Ranking</th>
+										<th scope="col" role="columnheader">Doubles Ranking</th>
 									</tr>
 								</thead>
 								<tbody>
 									{{range .SeededPlayers}}
 										<tr>
 											<th scope="row" role="rowheader"><a href="/tournament/{{$tournamentID}}/{{$tournamentYear}}/player/{{.ID}}">{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</a></th>
-											<td>{{if .Ranked}}{{.Ranking}}{{else}}Unranked{{end}}</td>
+											<td>{{if .HasSinglesRanking}}{{.SinglesRanking}}{{else}}Unranked{{end}}</td>
+											<td>{{if .HasDoublesRanking}}{{.DoublesRanking}}{{else}}Unranked{{end}}</td>
 										</tr>
 									{{end}}
 								</tbody>
@@ -44,13 +46,15 @@
 									<tr>
 										<th scope="col" role="columnheader">Player</th>
 										<th scope="col" role="columnheader">Singles Ranking</th>
+										<th scope="col" role="columnheader">Doubles Ranking</th>
 									</tr>
 								</thead>
 								<tbody>
 									{{range .UnseededPlayers}}
 										<tr>
 											<th scope="row" role="rowheader"><a href="/tournament/{{$tournamentID}}/{{$tournamentYear}}/player/{{.ID}}">{{.Name}} ({{.Country}})</a></th>
-											<td>{{if .Ranked}}{{.Ranking}}{{else}}Unranked{{end}}</td>
+											<td>{{if .HasSinglesRanking}}{{.SinglesRanking}}{{else}}Unranked{{end}}</td>
+											<td>{{if .HasDoublesRanking}}{{.DoublesRanking}}{{else}}Unranked{{end}}</td>
 										</tr>
 									{{end}}
 								</tbody>
