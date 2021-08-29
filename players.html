@@ -4,9 +4,12 @@
 {{define "mainHeading"}}Players{{end}}
 
 {{define "main"}}
-	{{if .}}
+	{{$tournamentID := .Tournament.ID}}
+	{{$tournamentYear := .Tournament.Year}}
+
+{{if .Players}}
 		<ul aria-labelledby="mainHeading">
-			{{range .}}
+			{{range .Players}}
 				<li>
 					<details>
 						<summary>
@@ -17,7 +20,7 @@
 						{{if .SeededPlayers}}
 							<ul aria-labelledby="eventHeading-{{.ID}} eventHeading-{{.ID}}-seeded">
 								{{range .SeededPlayers}}
-									<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
+									<li><a href="/tournament/{{$tournamentID}}/{{$tournamentYear}}/player/{{.ID}}">{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</a></li>
 								{{end}}
 							</ul>
 						{{else}}
@@ -27,7 +30,7 @@
 						{{if .UnseededPlayers}}
 							<ul aria-labelledby="eventHeading-{{.ID}} eventHeading-{{.ID}}-unseeded">
 								{{range .UnseededPlayers}}
-									<li>{{.Name}} ({{.Country}}) [{{if .Ranked}}{{.Ranking}}{{else}}Unranked{{end}}]</li>
+									<li><a href="/tournament/{{$tournamentID}}/{{$tournamentYear}}/player/{{.ID}}">{{.Name}} ({{.Country}}) [{{if .Ranked}}{{.Ranking}}{{else}}Unranked{{end}}]</a></li>
 								{{end}}
 							</ul>
 						{{else}}

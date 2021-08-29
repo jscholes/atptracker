@@ -179,6 +179,7 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 	}
 
 	type USOpenPlayer struct {
+		ID string
 		FirstName string `json:"first_name"`
 		LastName string `json:"last_name"`
 		Country string `json:"country_long"`
@@ -216,6 +217,7 @@ func (u USOpenProvider) DeserializePlayers(data []byte) (PlayerMap, error) {
 			}
 
 			player := Player{
+				ID: p.ID,
 				Name: fmt.Sprintf("%s %s", p.FirstName, p.LastName),
 				Country: p.Country,
 				Seeded: seeded,
@@ -273,6 +275,7 @@ type Event struct {
 }
 
 type Player struct {
+	ID string
 	Name string
 	Country string
 	Seeded bool
@@ -371,7 +374,15 @@ func main() {
 			return
 		}
 
-		if err := t.ExecuteTemplate(w, "players.html", players); err != nil {
+		ctx := struct{
+			Tournament LiveTournament
+			Players []Event
+		}{
+			Tournament: tournament,
+			Players: players,
+		}
+
+		if err := t.ExecuteTemplate(w, "players.html", ctx); err != nil {
 			http.Error(w, "500 internal server error", http.StatusInternalServerError)
 			log.Printf("Error executing template players.html: %v", err)
 			return
