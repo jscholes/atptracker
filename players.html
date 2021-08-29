@@ -12,14 +12,27 @@
 						<summary>
 							<span role="heading" aria-level="2" id="eventHeading-{{.ID}}">{{.Name}}</span>
 						</summary>
-						<ul aria-labelledby="eventHeading-{{.ID}}">
-							{{range .SeededPlayers}}
-								<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
-							{{end}}
-							{{range .UnseededPlayers}}
-								<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
-							{{end}}
-						</ul>
+						<a href="#eventHeading-{{.ID}}-unseeded">Skip to {{.Name}} Unseeded Players</a>
+						<h3 id="eventHeading-{{.ID}}-seeded">Seeds</h3>
+						{{if .SeededPlayers}}
+							<ul aria-labelledby="eventHeading-{{.ID}} eventHeading-{{.ID}}-seeded">
+								{{range .SeededPlayers}}
+									<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
+								{{end}}
+							</ul>
+						{{else}}
+							<p>No seeds found for this event.</p>
+						{{end}}
+						<h3 tabindex="-1" id="eventHeading-{{.ID}}-unseeded">Unseeded Players</h3>
+						{{if .UnseededPlayers}}
+							<ul aria-labelledby="eventHeading-{{.ID}} eventHeading-{{.ID}}-unseeded">
+								{{range .UnseededPlayers}}
+									<li>{{.Name}} ({{.Country}}){{if .Seeded}} [{{.Seed}}]{{end}}</li>
+								{{end}}
+							</ul>
+						{{else}}
+							<p>No unseeded players found for this event.</p>
+						{{end}}
 					</details>
 				</li>
 			{{end}}
