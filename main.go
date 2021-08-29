@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -24,6 +25,78 @@ const (
 	HTTPClientTimeout = 30
 	DesktopUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
 )
+
+type App struct {
+	DataService *TournamentDataService
+	StaticFiles fs.FS
+}
+
+func (a *App) currentTournaments(w http.ResponseWriter, r *http.Request) {
+	t, err := template.New("index.html").ParseFS(a.StaticFiles, "index.html")
+	if err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		log.Printf("Error loading template: %v", err)
+		return
+	}
+
+	t, err = t.ParseFS(a.StaticFiles, "layout.html")
+	if err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		log.Printf("Error loading template: %v", err)
+		return
+	}
+
+	if err := t.ExecuteTemplate(w, "index.html", a.DataService.GetAllTournaments()); err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		log.Printf("Error executing template index.html: %v", err)
+		return
+	}
+}
+
+func (a *App) tournamentPlayers(w http.ResponseWriter, r *http.Request) {
+	tournamentID := chi.URLParam(r, "id")
+	tournament, err := a.DataService.GetTournament(tournamentID)
+	if err != nil {
+		http.Error(w, "404 tournament not found", http.StatusNotFound)
+		log.Printf("Error fetching player list for tournament with ID %s: %v", tournamentID, err)
+		return
+	}
+
+	players, err := a.DataService.GetPlayers(tournament)
+	if err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		log.Printf("Error fetching player list for tournament with ID %s: %v", tournamentID, err)
+		return
+	}
+
+	t, err := template.New("players.html").ParseFS(a.StaticFiles, "players.html")
+	if err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		log.Printf("Error loading template: %v", err)
+		return
+	}
+
+	t, err = t.ParseFS(a.StaticFiles, "layout.html")
+	if err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		log.Printf("Error loading template: %v", err)
+		return
+	}
+
+	ctx := struct{
+		Tournament LiveTournament
+		Players []Event
+	}{
+		Tournament: tournament,
+		Players: players,
+	}
+
+	if err := t.ExecuteTemplate(w, "players.html", ctx); err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		log.Printf("Error executing template players.html: %v", err)
+		return
+	}
+}
 
 type TournamentDataService struct {
 	http *http.Client
@@ -320,74 +393,14 @@ func main() {
 		}
 	}
 
+	app := &App{
+		DataService: &dataService,
+		StaticFiles: staticFS,
+	}
+
 	r := chi.NewRouter()
-
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		t, err := template.New("index.html").ParseFS(staticFS, "index.html")
-		if err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading template: %v", err)
-			return
-		}
-
-		t, err = t.ParseFS(staticFS, "layout.html")
-		if err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading template: %v", err)
-			return
-		}
-
-		if err := t.ExecuteTemplate(w, "index.html", dataService.GetAllTournaments()); err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error executing template index.html: %v", err)
-			return
-		}
-	})
-
-	r.Get("/tournament/{id}/{year}/players", func(w http.ResponseWriter, r *http.Request) {
-		tournamentID := chi.URLParam(r, "id")
-		tournament, err := dataService.GetTournament(tournamentID)
-		if err != nil {
-			http.Error(w, "404 tournament not found", http.StatusNotFound)
-			log.Printf("Error fetching player list for tournament with ID %s: %v", tournamentID, err)
-			return
-		}
-
-		players, err := dataService.GetPlayers(tournament)
-		if err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error fetching player list for tournament with ID %s: %v", tournamentID, err)
-			return
-		}
-
-		t, err := template.New("players.html").ParseFS(staticFS, "players.html")
-		if err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading template: %v", err)
-			return
-		}
-
-		t, err = t.ParseFS(staticFS, "layout.html")
-		if err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error loading template: %v", err)
-			return
-		}
-
-		ctx := struct{
-			Tournament LiveTournament
-			Players []Event
-		}{
-			Tournament: tournament,
-			Players: players,
-		}
-
-		if err := t.ExecuteTemplate(w, "players.html", ctx); err != nil {
-			http.Error(w, "500 internal server error", http.StatusInternalServerError)
-			log.Printf("Error executing template players.html: %v", err)
-			return
-		}
-	})
+	r.Get("/", app.currentTournaments)
+	r.Get("/tournament/{id}/{year}/players", app.tournamentPlayers)
 
 	log.Printf("Serving application on port %s; press Ctrl+C to quit", port)
 
